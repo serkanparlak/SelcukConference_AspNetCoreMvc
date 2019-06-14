@@ -1,0 +1,112 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/images/favicon.png">
+    <title>@Localizer["selcukKonferans"]</title>
+    <!-- styles -->
+    <link href="~/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/plugins/sidebar-nav/dist/sidebar-nav.min.css" rel="stylesheet" />
+    <link href="~/css/animate.css" rel="stylesheet">
+    <link href="~/css/style-admin.css" rel="stylesheet">
+    <link href="~/css/colors/megna.css" rel="stylesheet" />
+    <link href="~/plugins/sweetalert/sweetalert.css" rel="stylesheet" />
+    <link href="~/plugins/toast-master/css/jquery.toast.css" rel="stylesheet" />
+    <link href="~/plugins/switchery/switchery.min.css" rel="stylesheet" />
+    <!-- scripts -->
+    <script src="~/plugins/jquery/dist/jquery.min.js"></script>
+    <script src="~/plugins/jquery/dist/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/plugins/sidebar-nav/dist/sidebar-nav.min.js"></script>
+    <script src="~/js/jquery.slimscroll.js"></script>
+    <script src="~/js/waves.js"></script>
+    <script src="~/js/custom.min.js"></script>
+    <script src="~/plugins/sweetalert/sweetalert.min.js"></script>
+    <script src="~/plugins/toast-master/js/jquery.toast.js"></script>
+    <script src="~/plugins/switchery/switchery.min.js"></script>
+    <script src="~/plugins/blockUI/jquery.blockUI.js"></script>
+</head>
+
+<body class="fix-header">
+
+    <!-- ============================================================== -->
+    <!-- Preloader -->
+    <!-- ============================================================== -->
+    <div class="preloader">
+        <svg class="circular" viewBox="25 25 50 50">
+            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" />
+        </svg>
+    </div>
+    <!-- ============================================================== -->
+    <!-- Wrapper -->
+    <!-- ============================================================== -->
+    <div id="wrapper">
+        <!-- ============================================================== -->
+        <!-- Topbar header - style you can find in pages.scss -->
+        <!-- ============================================================== -->
+
+        @await Component.InvokeAsync("HeaderAdmin")
+
+        <!-- End Top Navigation -->
+        <!-- ============================================================== -->
+        <!-- Left Sidebar - style you can find in sidebar.scss  -->
+        <!-- ============================================================== -->
+        @await Component.InvokeAsync("LeftMenuAdmin")
+
+
+        <!-- ============================================================== -->
+        <!-- End Left Sidebar -->
+        <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- Page Content -->
+        <!-- ============================================================== -->
+        <div id="page-wrapper">
+            <div class="container-fluid">
+
+                @RenderBody()
+
+            </div>
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page Content -->
+        <!-- ============================================================== -->
+        <footer class="footer text-center"> @DateTime.Now.Year &copy; Technology Conf. Admin</footer>
+    </div>
+
+    <!-- /#wrapper -->
+    <script>
+    var lutfenBekleyin = @Json.Serialize(Localizer["lutfenBekleyin"].Value);
+
+    $(function () {
+        $.ajaxSetup({
+            type: 'POST',
+            beforeSend: function () {
+                //$('.preloader').fadeIn();
+                $('.blockUI').block({
+                    message: '<p style="margin:0;padding:8px;font-size:24px;">'+ lutfenBekleyin +'...</p>'
+                    , css: {
+                        color: '#fff'
+                        , border: '1px solid #fb9678'
+                        , backgroundColor: '#fb9678'
+                    }
+                });
+            },
+            complete: function () {
+                //$('.preloader').fadeOut("fast");
+                $('.blockUI').unblock();
+            }
+        });
+    });
+    </script>
+</body>
+
+</html>

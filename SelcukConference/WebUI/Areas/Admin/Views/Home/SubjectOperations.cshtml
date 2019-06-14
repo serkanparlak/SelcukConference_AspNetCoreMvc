@@ -1,0 +1,186 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Areas.Admin.Models.EditorOperationsViewModel
+@{
+    Layout = "AdminLayout";
+    int i = 1;
+}
+<style>
+    td {
+        vertical-align: middle !important;
+        padding: 3px 8px !important;
+    }
+
+</style>
+
+<div class="row bg-title" style="padding-top: 15px">
+    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+        <h4>@Localizer["editorKonuAtamalari"]</h4>
+    </div>
+    <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="/Admin">@Localizer["anasayfa"]</a></li>
+            <li class="active">@Localizer["konular"]</li>
+        </ol>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="white-box">
+            <div class="box-title">
+                <p class="text-muted text-center"> @Localizer["yeniKonuEtiketi"]</p>
+            </div>
+            <div class="row">
+                <form action="/Admin/Home/KonuEkle" method="post">
+                    <div class="form-group">
+                        <div class="col-lg-3 col-md-3 col-sm-3">
+                            <input type="text" class="form-control" name="EtiketAdiTr" id="EtiketAdiTr" placeholder="@Localizer["konuAdiTr"]" required="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-3 col-md-3 col-sm-3">
+                            <input type="text" class="form-control" name="EtiketAdiEng" id="EtiketAdiEng" placeholder="@Localizer["konuAdiEng"]" required="">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            @Html.DropDownList("EditorId", new SelectList(ViewBag.Editors, "Id", "Adi"), new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-2 col-md-2 col-sm-2">
+                            <button type="submit" class="btn btn-info btn-rounded btn-block text-uppercase">@Localizer["ekle"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-wrapper collapse in">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th>@Localizer["konuAdiTr"]</th>
+                            <th>@Localizer["konuAdiEng"]</th>
+                            <th>@Localizer["editor"]</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Konular)
+                        {
+                            <tr myvalue="@item.Id">
+                                <td class="text-center">@(i++)</td>
+                                <td class="konuaditr">@item.EtiketAdiTr</td>
+                                <td class="konuadieng">@item.EtiketAdiEng</td>
+                                <td>@item.Editor.Unvan @item.Editor.Adi @item.Editor.Soyadi</td>
+                                <td>
+                                    <button type="button" class=" fcbtn btn-outline btn-danger btnDelete" title="@Localizer["sil"]"><i class="icon-trash"></i></button>
+                                    <button type="button" class=" fcbtn btn-outline btn-primary btnKonuDuzenle" data-toggle="modal" data-target="#konuDuzenModal" title="@Localizer["duzenle"]"><i class="ti-pencil-alt"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="konuDuzenModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content blockUI">
+            <!--FORM-->
+
+        </div>
+    </div>
+</div>
+
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var islemBasarili = @Json.Serialize(Localizer["islemBasarili"].Value);
+    var eminMisin = @Json.Serialize(Localizer["eminMisin"].Value);
+    var sil = @Json.Serialize(Localizer["sil"].Value);
+
+    $(document).ready(function () {
+        //--İşlem Sonucu Bildirisi--
+        var sonuc = '@TempData["sonuc"]';
+        if (sonuc.length > 0 && sonuc === 'True') {
+            $.toast({
+                heading: islemBasarili,
+                text: '',
+                icon: 'success'
+            });
+        } else if (sonuc.length > 0) {
+            $.toast({
+                heading: birSorunOlustu,
+                text : sonuc,
+                icon: 'error'
+            });
+        }
+        //--Son--
+
+        $('.btnDelete').on('click', function () {
+            var konuLi = $(this).closest('tr');
+            var konuId = konuLi.attr('myvalue');
+            swal({
+                title: eminMisin,
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: sil
+            }, function () {
+                $.getJSON("/Admin/Home/KonuSil/" + konuId, function (result) {
+                    if (result) {
+                        $.toast({
+                            heading: islemBasarili,
+                            text: '',
+                            icon: 'success'
+                        });
+                        konuLi.slideUp();
+                    } else {
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text: '',
+                            icon: 'error'
+                        });
+                    }
+                });
+            });
+        });
+
+        $('.btnKonuDuzenle').on('click', function () {
+            var konuId = $(this).closest('tr').attr('myvalue');
+            $('#konuDuzenModal .blockUI').load('/Admin/Home/_SubjectDetail/' + konuId);
+        });
+
+        $('#EtiketAdiTr').on("keyup", function () {
+            var aranan = this.value.toLowerCase();
+            $(".konuaditr").each(function (i, value) {
+                var varmi = value.innerText.toLowerCase().indexOf(aranan);
+                if (varmi === -1) {
+                    $(this).closest('tr').hide();
+                } else {
+                    $(this).closest('tr').show();
+                }
+            });
+        });
+        $('#EtiketAdiEng').on("keyup", function () {
+            var aranan = this.value.toLowerCase();
+            $(".konuadieng").each(function (i, value) {
+                var varmi = value.innerText.toLowerCase().indexOf(aranan);
+                if (varmi === -1) {
+                    $(this).closest('tr').hide();
+                } else {
+                    $(this).closest('tr').show();
+                }
+            });
+        });
+    });
+</script>

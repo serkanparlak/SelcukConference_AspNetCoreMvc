@@ -1,0 +1,543 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Models.PaperDetailViewModel
+
+@{
+    Layout = "UserLayout";
+    var sonuclandiMi = Model.Bildiri.Sonuc != 2 ? "active" : "";
+    var hakemAtaActive = Model.AtananHakemler.Count == 0 && sonuclandiMi == "" ? "active" : "";
+    var hakemlerActive = hakemAtaActive == "" && sonuclandiMi == "" ? "active" : "";
+
+    var yazarMiyim = Model.Bildiri.YazarId == Model.Oturum.Id;
+    var editorMuyum = Model.Bildiri.EditorId == Model.Oturum.Id;
+    var hakemMiyim = Model.AtananHakemler.Any(x => x.Id == Model.Oturum.Id);
+    var hakemSonuc = hakemMiyim ? Model.HakemBildiri.Sonuc : 0;
+    var sira = 1;
+}
+<link href="~/plugins/summernote/summernote.css" rel="stylesheet" />
+<link href="~/plugins/custom-select/custom-select.css" rel="stylesheet" />
+<style>
+    .select2-container {
+        border: 1px solid #ccc;
+        margin-top: 10px;
+    }
+
+    .select2-results {
+        padding-left: 0;
+        margin: 0;
+    }
+
+        .select2-results .select2-result-label {
+            padding: 5px;
+        }
+
+    .select2-drop-active {
+        padding-top: 0;
+    }
+
+    .select2-drop, .select2-drop.select2-drop-above {
+        border-radius: 0;
+    }
+
+    .select2-search-choice-close {
+        width: 17px;
+        top: 9px;
+    }
+
+    .select2-container-multi .select2-choices .select2-search-choice {
+        border-radius: 0;
+        padding: 10px 10px 10px 23px;
+        margin: 7px 0 7px 7px;
+        color: dimgray;
+        background-image: none;
+        background-color: white;
+    }
+
+    .select2-drop-active {
+        border: 1px solid #3875d7 !important;
+    }
+
+    .select2-container-multi .select2-choices .select2-search-field input {
+        padding: 7px 15px;
+        font-family: rubik;
+    }
+
+    .select2-container-multi .select2-choices {
+        border: none;
+    }
+
+    .select2-results .select2-no-results {
+        background-color: white;
+        padding: 12px
+    }
+</style>
+
+<div id="page-wrapper">
+    <div class="container-fluid">
+        <div class="row bg-title">
+            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+                <h4 class="page-title">@Localizer["bildiriDetay"]</h4>
+            </div>
+            <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="/Home">@Localizer["anasayfa"]</a></li>
+                    <li><a href="/Paper/Papers">@Localizer["bildiriler"]</a></li>
+                    <li class="active">@Localizer["bildiriDetay"]</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                @if (editorMuyum)
+                {
+                    <div class="white-box">
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="@hakemAtaActive"><a href="#hakemAta" aria-controls="hakemAta" role="tab" data-toggle="tab" aria-expanded="true"><span class="visible-xs"><i class="ti-home"></i></span><span class="hidden-xs">@Localizer["hakemAta"]</span></a></li>
+                            <li role="presentation" class="@hakemlerActive"><a href="#hakemler" aria-controls="hakemler" role="tab" data-toggle="tab" aria-expanded="false"><span class="visible-xs"><i class="ti-user"></i></span> <span class="hidden-xs">@Localizer["hakemKararlari"]</span></a></li>
+                            <li role="presentation" class="@sonuclandiMi">
+                                <a href="#editorKarari" aria-controls="editorKarari" role="tab" data-toggle="tab" aria-expanded="false">
+                                    <span class="visible-xs"><i class="ti-email"></i></span> <span class="hidden-xs">
+                                        @Localizer["editorKarari"] (
+                                        @if (Model.Bildiri.Sonuc == 2)
+                                        {
+                                            <span class="text-info"> @Localizer["bekliyor"]</span>
+                                        }
+                                        else if (Model.Bildiri.Sonuc == 3)
+                                        {
+                                            <span class="text-success"> @Localizer["onaylandi"]</span>
+                                        }
+                                        else if (Model.Bildiri.Sonuc == 4)
+                                        {
+                                            <span class="text-warning"> @Localizer["revizyon"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger"> @Localizer["ret"]</span>
+                                        } )
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane @hakemAtaActive" id="hakemAta">
+                                <form method="post" id="hakemAtaForm">
+                                    <input type="text" name="bId" value="@Model.Bildiri.Id" hidden="" />
+                                    <select class="form-control" id="select_assign" name="selectAssign">
+                                        <option value="0">@Localizer["rastgeleSecim"]</option>
+                                        <option value="1">@Localizer["manuelSecim"]</option>
+                                    </select>
+                                    <div id="oto_assign" class="m-t-10">
+                                        <div class="row clearfix">
+                                            <div class="form-group">
+                                                <label for="adet" class="col-sm-4 control-label text-right" style="padding-top: 10px">@Localizer["hakemSayisi"] :</label>
+                                                <div class="col-sm-4">
+                                                    <input type="number" min="1" max="@Model.TumHakemler.Count" class="form-control" name="adet" id="adet" value="3" required="" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="hand_assign" hidden="">
+                                        @Html.DropDownList("seciliHakemIds", new MultiSelectList(Model.TumHakemler.Select(x => new { x.Id, x.Nick }), "Id", "Nick", Model.AtananHakemler.Select(x => x.Id)), new { @class = "select2 select2-multiple", multiple = "", data_placeholder = Localizer["hakemSecin"] })
+                                    </div>
+                                    <div class="btn-group m-t-20">
+                                        <input class="fcbtn btn-1c btn-outline btn-primary" type="submit" value="@Localizer["kaydet"]" />
+                                    </div>
+                                </form>
+
+                                <div class="clearfix"></div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane @hakemlerActive" id="hakemler">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>@Localizer["ad"]</th>
+                                                <th>@Localizer["durum"]</th>
+                                                <th>@Localizer["hakemNotu"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.Bildiri.HakemBildiriAtama)
+                                            {
+                                                var hakem = Model.AtananHakemler.SingleOrDefault(x => x.Id == item.HakemId);
+                                                <tr>
+                                                    <td>@(sira++)</td>
+                                                    <td class="txt-oflo">@hakem?.Nick</td>
+                                                    <td>
+                                                        @if (item.Sonuc == 2)
+                                                        {
+                                                            <span class="label label-info m-r-10">@Localizer["bekliyor"]</span>
+                                                        }
+                                                        else if (item.Sonuc == 3)
+                                                        {
+                                                            <span class="label label-success m-r-10">@Localizer["onaylandi"]</span>
+                                                        }
+                                                        else if (item.Sonuc == 4)
+                                                        {
+                                                            <span class="label label-warning m-r-10">@Localizer["revizyon"]</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="label label-danger m-r-10">@Localizer["ret"]</span>
+                                                        }
+                                                    </td>
+                                                    <td>@Html.Raw(item.HakemNotu)</td>
+                                                </tr>
+
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane @sonuclandiMi" id="editorKarari">
+                                <div class="row clearfix">
+                                    <form method="post" id="editorSonucForm">
+                                        <input type="text" name="bId" value="@Model.Bildiri.Id" hidden="" />
+                                        <div class="form-group">
+                                            <label for="editorSonuc" class="col-md-12">@Localizer["karar"]</label>
+                                            <div class="col-md-12">
+                                                <select class="form-control" id="editorSonuc" name="editorSonuc">
+                                                    <option value="3">@Localizer["onay"]</option>
+                                                    <option value="4">@Localizer["revizyon"]</option>
+                                                    <option value="5">@Localizer["ret"]</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-12 m-t-15">@Localizer["editorNotu"]</label>
+                                            <div class="col-md-12">
+                                                <textarea name="editorNotu" id="editorNotuInput" hidden=""></textarea>
+                                                <div id="editorNotuDiv" style="border: 1px solid #ccc; min-height: 120px">@Html.Raw(Model.Bildiri.EditorNotu)</div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group m-t-20 col-md-12">
+                                            <input class="fcbtn btn-1c btn-outline btn-primary" type="submit" value="@Localizer["kaydet"]" />
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (hakemMiyim)
+                {
+                    <div class="white-box">
+                        <h3 class="box-title" style="color: dimgray">
+                            @Localizer["hakemKarari"] (
+                            @if (Model.HakemBildiri.Sonuc == 2)
+                            {
+                                <span class="text-info"> @Localizer["bekliyor"]</span>
+                            }
+                            else if (Model.HakemBildiri.Sonuc == 3)
+                            {
+                                <span class="text-success"> @Localizer["onaylandi"]</span>
+                            }
+                            else if (Model.HakemBildiri.Sonuc == 4)
+                            {
+                                <span class="text-warning"> @Localizer["revizyon"]</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger"> @Localizer["ret"]</span>
+                            })
+                        </h3>
+                        @if (Model.Bildiri.Sonuc == 2)
+                        {
+                            <div class="row clearfix">
+                                <form method="post" id="hakemSonucForm">
+                                    <input type="text" name="hbId" value="@Model.HakemBildiri.Id" hidden="" />
+                                    <div class="form-group">
+                                        <label for="editorSonuc" class="col-md-12">@Localizer["karar"]</label>
+                                        <div class="col-md-12">
+                                            <select class="form-control" id="hakemSonuc" name="hakemSonuc">
+                                                <option value="3">@Localizer["onay"]</option>
+                                                <option value="4">@Localizer["revizyon"]</option>
+                                                <option value="5">@Localizer["ret"]</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-12 m-t-15">@Localizer["hakemNotu"]</label>
+                                        <div class="col-md-12">
+                                            <textarea name="hakemNotu" id="hakemNotuInput" hidden=""></textarea>
+                                            <div id="hakemNotuDiv" style="border: 1px solid #ccc; min-height: 120px">@Html.Raw(Model.HakemBildiri.HakemNotu)</div>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group m-t-20 col-md-12">
+                                        <input class="fcbtn btn-1c btn-outline btn-primary" type="submit" value="@Localizer["kaydet"]" />
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <h3 class="text-warning">@Localizer["degisiklikYapilamaz"]!</h3>
+                        }
+                    </div>
+                }
+
+                <!--Bildiri Detay-->
+                <div class="white-box">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3 class="box-title" style="color: dimgray">
+                                (<small class="text-muted"> @Model.Bildiri.SayfaKimlik </small>)
+                                <div id="islemKutusu" class="pull-right">
+                                    @if (yazarMiyim && Model.Bildiri.Sonuc == 2 && Model.Bildiri.Sonuc == 4 || Model.Oturum.Admin)
+                                    {
+                                        <div class="btn-group">
+                                            <a class="btn btn-facebook waves-float waves-effect waves-light" href="/Paper/EditPaper?bId=@Model.Bildiri.Id" style="border-radius: 0;">@Localizer["duzenle"]</a>
+                                        </div>
+                                    }
+                                    @if (yazarMiyim || Model.Oturum.Admin)
+                                    {
+                                        <div class="btn-group">
+                                            <buton class="btn btn-googleplus waves-float waves-effect waves-light m-l-10 silBtn" style="border-radius: 0;">@Localizer["sil"]</buton>
+                                        </div>
+                                    }
+                                </div>
+                                <div id="onayKutusu" class="pull-right" hidden="">
+                                    <small class="text-muted">@Localizer["kaliciSilinecek"]!</small>
+                                    <div class="btn-group">
+                                        <input type="button" value="@Localizer["sil"]" class="btn-outline btn-danger btn-block m-l-10 onaylaBtn" myValue="@Model.Bildiri.Id" />
+                                    </div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn-outline btn-primary btn-block m-l-10 reddetBtn">@Localizer["vazgec"]</button>
+                                    </div>
+                                </div>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="p-t-20">
+                        <div class="row">
+                            <div class="col-md-3 col-xs-6 b-r">
+                                <span>@Localizer["yazar"]</span>
+                                <br>
+                                <p class="text-muted">@Model.Bildiri.Yazar.Nick</p>
+                            </div>
+                            <div class="col-md-3 col-xs-6 b-r">
+                                <span>@Localizer["mail"]</span>
+                                <br>
+                                <p class="text-muted">@Model.Bildiri.Yazar.Mail</p>
+                            </div>
+                            <div class="col-md-3 col-xs-6 b-r">
+                                <span>@Localizer["durum"]</span>
+                                <br>
+                                <p class="text-muted">
+                                    @if (Model.Bildiri.Sonuc == 2)
+                                    {
+                                        <span class="text-info"> @Localizer["bekliyor"]</span>
+                                    }
+                                    else if (Model.Bildiri.Sonuc == 3)
+                                    {
+                                        <span class="text-success"> @Localizer["onaylandi"]</span>
+                                    }
+                                    else if (Model.Bildiri.Sonuc == 4)
+                                    {
+                                        <span class="text-warning"> @Localizer["revizyon"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger"> @Localizer["ret"]</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-md-3 col-xs-6">
+                                <span>@Localizer["duzenlemeTarihi"]</span>
+                                <br>
+                                <p class="text-muted">@Model.Bildiri.BildiriTarih.ToLongDateString()</p>
+                            </div>
+                        </div>
+                        <hr />
+
+                        <h4 class="m-t-0" style="color: dimgray">@Localizer[""]Subject : @Model.Bildiri.Konu</h4>
+                        <hr>
+                        <h4> @Localizer["aciklama"] :</h4>
+                        @Html.Raw(Model.Bildiri.Aciklama)
+                        <br />
+                        <hr />
+                        <h4> @Localizer["ek"] <span>(@Model.Bildiri.Ek.Count)</span> </h4>
+                        <div class="row">
+                            @foreach (var item in Model.Bildiri.Ek)
+                            {
+                                var path = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", item.EkYol.Substring(1).Replace("/", "\\"));
+                                var ext = System.IO.Path.GetExtension(path).ToLower();
+                                <div class="col-sm-2 col-xs-4">
+                                    @if (!".jpeg .jpg .png .gif".Contains(ext))
+                                    {
+                                        if (ext == ".pdf")
+                                        {
+                                            <a href="@item.EkYol" class="img-thumbnail text-center"> <i class="mdi mdi-file-pdf fa-5x"></i> PDF @Localizer["dosyasi"]</a>
+                                        }
+                                        else if (ext == ".doc" || ext == ".docx")
+                                        {
+                                            <a href="@item.EkYol" class="img-thumbnail text-center"> <i class="mdi mdi-file-word fa-5x"></i><br /> Word @Localizer["dosyasi"] </a>
+                                        }
+                                        else if (ext == ".xls" || ext == ".xlsx")
+                                        {
+                                            <a href="@item.EkYol" class="img-thumbnail text-center"> <i class="mdi mdi-file-excel fa-5x"></i> Excel @Localizer["dosyasi"] </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@item.EkYol" class="img-thumbnail text-center"> <i class="mdi mdi-file fa-5x"></i><br /> @ext.Substring(1).ToUpper() @Localizer["dosyasi"] </a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <a href="@item.EkYol" target="_blank"> <img class="img-thumbnail img-responsive" alt="attachment" src="@item.EkYol" /></a>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        @if (Model.Bildiri.Sonuc != 2 && !string.IsNullOrWhiteSpace(Model.Bildiri.EditorNotu))
+                        {
+                            <br />
+                            <hr />
+                            <h4> <i class="fa fa-thumb-tack m-r-10 m-b-10"></i> @Localizer["editorNotu"]</h4>
+                            @Html.Raw(Model.Bildiri.EditorNotu)
+                        }
+                    </div>
+                    <!--Bildiri Detay Son-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/plugins/custom-select/custom-select.min.js"></script>
+<script src="~/plugins/summernote/summernote.min.js"></script>
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+
+    $(document).ready(function () {
+        if ('@editorMuyum' === 'True') {
+            var editorSonuc = '@Model.Bildiri.Sonuc';
+            $('#editorSonuc option[value='+editorSonuc+']').attr('selected', "");
+            $('#editorNotuDiv').summernote({ airMode: true });
+            $(".select2").select2();
+            $('#select_assign').on('change', function () {
+                if (parseInt($(this).val()) === 0) {
+                    $('#oto_assign #adet').prop("disabled", false);
+                } else {
+                    $('#oto_assign #adet').prop("disabled", true);
+                }
+                $('#hand_assign').slideToggle("fast");
+                $('#oto_assign').slideToggle("fast");
+            });
+            $('#hakemAtaForm').submit(function () {
+                //var assignType = parseInt($('#select_assign').val());
+                //var assignedCount = $('#seciliHakemIds option:selected').length;
+                //if (assignType === 1 && assignedCount < 1) {
+                //    $.toast({
+                //        heading: 'Opps!',
+                //        text: "Hiç Hakem Seçmedin!",
+                //        icon: 'warning'
+                //    });
+                //    return false;
+                //}
+
+                var veri = $(this).serializeArray();
+                $.ajax({
+                    url: '/Paper/HakemAta',
+                    type: 'POST',
+                    data: veri,
+                    success: function (result) {
+                        if (result) {
+                            location.reload();
+                        } else {
+                            $.toast({
+                                heading: birSorunOlustu,
+                                text: '',
+                                icon: 'error'
+                            });
+                        }
+                    }
+                });
+                return false;
+            });
+
+            $('#editorSonucForm').on('submit', function () {
+                var editorNotu = $('#editorSonucForm #editorNotuInput').next()[0].innerHTML;
+                $('#editorNotuInput').val(editorNotu);
+
+                var veri = $(this).serialize();
+                $.ajax({
+                    url : "/Paper/EditorKarar",
+                    method : "POST",
+                    data : veri,
+                    success : function(sonuc) {
+                        if (sonuc) {
+                            location.reload();
+                        } else {
+                            $.toast({
+                                heading: birSorunOlustu,
+                                text: '',
+                                icon: 'error'
+                            });
+                        }
+                    }
+                });
+                return false;
+            });
+        }
+        if ('@hakemMiyim' === 'True') {
+            var hakemSonuc = @hakemSonuc;
+            $('#hakemSonuc option[value='+hakemSonuc+']').attr('selected', "");
+            $('#hakemNotuDiv').summernote({ airMode: true });
+            $('#hakemSonucForm').on('submit', function () {
+                var hakemNotu = $('#hakemSonucForm #hakemNotuInput').next()[0].innerHTML;
+                $('#hakemNotuInput').val(hakemNotu);
+
+                var veri = $(this).serialize();
+                $.ajax({
+                    url: "/Paper/HakemKarar",
+                    method: "POST",
+                    data: veri,
+                    success: function (sonuc) {
+                        if (sonuc) {
+                            location.reload();
+                        } else {
+                            $.toast({
+                                heading: birSorunOlustu,
+                                text: '',
+                                icon: 'error'
+                            });
+                        }
+                    }
+                });
+                return false;
+            });
+        }
+
+        $('#islemKutusu .silBtn').on('click', function () {
+            $('#islemKutusu').hide();
+            $('#onayKutusu').show();
+        });
+        $('#onayKutusu .reddetBtn').on('click', function () {
+            $('#islemKutusu').show();
+            $('#onayKutusu').hide();
+        });
+        $('#onayKutusu .onaylaBtn').on('click', function () {
+            var bId = $(this).attr('myValue');
+            $.getJSON("/Paper/DeletePaper", { 'bId': bId }, function (result) {
+                if (result.sonuc) {
+                    location.href = "/Paper/Papers";
+                } else {
+                    $.toast({
+                        heading: birSorunOlustu,
+                        text: result.mesaj,
+                        icon: 'warning'
+                    });
+                }
+            });
+        });
+
+    });
+</script>

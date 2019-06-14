@@ -1,0 +1,34 @@
+﻿@{
+    Layout = null;
+}
+@model WebUI.Models.ChatMessagesViewModel
+
+<ul class="p-l-0">
+    @foreach (var item in Model.Messages)
+    {
+        var odd = item.GonderenId == Model.Gonderen.Id ? "odd" : null;
+        var okunduMuKontrol = !item.Okundu;
+
+        <li class="@odd @if(odd != null && okunduMuKontrol){ <text>okunduMuKontrol</text> }" @if (odd != null && okunduMuKontrol) { <text> myValue="@item.Id" </text> }>
+            <div class="chat-body">
+                <div class="chat-text">
+                    <p> @item.Icerik </p>
+                    <b class="text-muted">
+                        @item.IletimTarihi.ToString("f")
+                        @if (item.GonderenId == Model.Gonderen.Id)
+                        {
+                            <i class="fa fa-check @if(!item.Okundu) { <text>hidden</text> }" style="color: darkcyan"></i>
+                        }
+                    </b>
+                </div>
+            </div>
+        </li>
+    }
+</ul>
+<script>
+    $(document).ready(function () {
+        $('.chat-list').slimScroll({
+            scrollTo: $('.chat-list ul').height() + 'px'
+        });
+    });
+</script>

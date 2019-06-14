@@ -1,0 +1,78 @@
+﻿<!-- Left Menu User -->
+@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Areas.Admin.Models.LeftMenuViewModel
+@{
+    var dilTr = Localizer.CurrentLanguage == "tr";
+}
+<div class="navbar-default sidebar" role="navigation" style="border-bottom: 1px solid #eee">
+    <div class="sidebar-nav slimscrollsidebar">
+        <div class="sidebar-head">
+            <h3 class="m-b-0"><span class="fa-fw open-close" style="margin-bottom: 5px; cursor: pointer"><i class="ti-menu hidden-xs"></i><i class="ti-close visible-xs"></i></span> <span class="hide-menu">Navigation</span></h3>
+        </div>
+        <ul class="nav" id="side-menu" style="margin-top: 60px">
+            @if (Model.Oturum != null)
+            {
+                if (Model.Oturum.Admin)
+                {
+                    <li><a href="/Admin" class="waves-effect"><i class="mdi mdi-access-point fa-fw"></i> <span class="hide-menu">Admin</span></a></li>
+                }
+                if (Model.Oturum.Yazar || Model.Oturum.Hakem || Model.Oturum.Editor)
+                {
+                    <li><a href="/Paper/Papers" class="waves-effect"><i class="mdi mdi-bell fa-fw"></i> <span class="hide-menu">@Localizer["bildiriler"]</span></a></li>
+                }
+                <li><a href="/Message/Messages" class="waves-effect"><i class="mdi mdi-message fa-fw"></i> <span class="hide-menu">@Localizer["mesajlar"]</span></a></li>
+                <li class="devider" style="margin: 0"></li>
+            }
+            @foreach (var item in Model.Menus.Where(x => x.AltMenuId == 0))
+            {
+                var pageKontrol = Model.Menus.Any(x => x.AltMenuId == item.Id);
+                var ustLink = pageKontrol ? "javascript:void(0)" : "/Home?page=" + item.Id;
+                var aktifMenu = Model.ActiveMenu != null && (Model.ActiveMenu.AltMenuId == item.Id || Model.ActiveMenu.Id == item.Id) ? "active" : "";
+
+                var altMenus = Model.Menus.Where(x => x.AltMenuId == item.Id).ToList();
+
+                <li class="@aktifMenu" id="main-li">
+                    <a href="@ustLink" class="waves-effect @aktifMenu">
+                        <i class="ti-angle-double-right mystyle-icon"></i>
+                        <span class="hide-menu">
+                            @(dilTr ? item.MenuAdi : item.MenuAdiEng)
+                            @if (altMenus.Count > 0)
+                            {
+                                <span class="fa arrow"></span>
+                                <span class="label label-rouded label-inverse pull-right">@altMenus.Count</span>
+                            }
+                        </span>
+                    </a>
+                    @if (altMenus.Count > 0)
+                    {
+                        <ul class="nav nav-second-level">
+                            @foreach (var subitem in altMenus)
+                            {
+                                var aktifAltMenu = Model.ActiveMenu != null && Model.ActiveMenu.Id == subitem.Id ? "active" : "";
+                                <li id="sub-li">
+                                    <a href="/Home?page=@subitem.Id" class="@aktifAltMenu">
+                                        <i class="ti-angle-right m-r-5"></i>
+                                        <span class="hide-menu">@(dilTr ? subitem.MenuAdi : subitem.MenuAdiEng)</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+            <li class="m-b-30"></li>
+        </ul>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('.slimscrollsidebar').slimScroll({
+            height: '100%', 
+            position: 'right',
+            //opacity : 0
+            size: "3px",
+            color: 'rgba(0,0,0,0.3)'
+
+        });
+    });
+</script>

@@ -1,0 +1,177 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@{
+    Layout = "UserLayout";
+}
+
+<link href="~/plugins/summernote/summernote.css" rel="stylesheet" />
+<link href="~/plugins/dropzone/dropzone.css" rel="stylesheet" />
+<style>
+    .dropzone {
+        border: 1px solid #ccc
+    }
+
+    .dz-progress {
+        border: 1px solid #333;
+    }
+
+    .dz-remove {
+        transition: 0.4s;
+        position: relative;
+        top: -30px;
+        z-index: 20;
+        background-color: black;
+        background-color: rgba(0,0,0,0.4);
+        color: white;
+        width: 45px;
+        border-radius: 12px;
+        margin: 0 auto;
+    }
+
+        .dz-remove:hover {
+            color: white;
+            background-color: #333;
+        }
+</style>
+<div id="page-wrapper">
+    <div class="container-fluid">
+        <div class="row bg-title">
+            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+                <h4 class="page-title">@Localizer["yeniBildiriOlustur"]</h4>
+            </div>
+            <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="/Home">@Localizer["anasayfa"]</a></li>
+                    <li><a href="/Paper/Papers">@Localizer["bildiriler"]</a></li>
+                    <li class="active">@Localizer["yeniBildiri"]</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="white-box">
+                    <form action="#" id="newPaperForm" enctype="multipart/form-data">
+
+                        <div class="form-group">
+                            <input class="form-control" name="Konu" placeholder="@Localizer["konu"]:" required="">
+                        </div>
+                        <div class="form-group">
+                            <h4><i class="fa fa-quote-left"></i> @Localizer["aciklama"]</h4>
+                            <textarea class="summernote form-control" name="Aciklama" rows="15"></textarea>
+                        </div>
+
+                        <h4><i class="fa fa-link"></i> @Localizer["ek"]</h4>
+                        <div id="myDropzone" class="dropzone">
+                            <div class="dz-message">
+                                <i class="fa fa-cloud-upload" style="font-size: 50px"></i>
+                                <h3>@Localizer["birDosyaSecin"]</h3>
+                            </div>
+                            <div class="fallback">
+                                <input name="file" type="file" multiple />
+                            </div>
+                            <input type="button" id="submitDropzoneFiles" value="" hidden="" />
+                        </div>
+
+                        <hr>
+                        <div class="btn-group-lg">
+                            <button type="submit" class="btn-lg btn-primary waves-float waves-effect waves-light text-uppercase" style="border-radius: 0">@Localizer["kaydet"]</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Message Top Right-->
+<div id="alerttopright" class="myadmin-alert alert-info myadmin-alert-top-right">
+    @Localizer["lutfenDosyalariBekleyin"]
+</div>
+<!--Message-->
+
+<script src="~/plugins/summernote/summernote.min.js"></script>
+<script src="~/plugins/dropzone/dropzone.js"></script>
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var islemBasarili = @Json.Serialize(Localizer["islemBasarili"].Value);
+    var sil = @Json.Serialize(Localizer["sil"].Value);
+
+    $(document).ready(function () {
+        $('.summernote').summernote({ height: 300 });
+
+        var bId = 0;
+        var fileSize = 0;
+        //Dropzone.autoDiscover = false;
+        Dropzone.options.myDropzone = {
+            url: "/Paper/ImageUpload",
+            paramName: "file",
+            uploadMultiple: true,
+            maxFilesize: 5,// max dosya boyutu MB cinsinden
+            maxFiles: 3, // max dosya sayısı
+            parallelUploads: 3,//paralel adedi
+            autoProcessQueue: false,
+            acceptedFiles: "image/*,.xlsx,.xls,.pdf,.doc,.docx,.rar,.zip",
+            init: function () {
+                var myDropzone = this;
+
+                this.on("addedfile", function (file) {
+                    var removeButton = Dropzone.createElement(
+                        "<a title=" + sil + " class='dz-remove' href='javascript:undefined;' data-dz-remove=''>" +
+                        "<i class='mdi mdi-delete-circle' style='font-size: 30px;cursor:pointer'></i>" +
+                        "</a>");
+                    removeButton.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        myDropzone.removeFile(file);
+                    });
+                    file.previewElement.appendChild(removeButton);
+                });
+
+                this.on("complete", function (file) {
+                    if (file.accepted) {
+                        fileSize--;
+                        if (fileSize === 0) {
+                            setTimeout(function () { location.href = "/Paper/PaperDetail?bId=" + bId }, 500);
+                        }
+                    }
+                });
+
+                var buton = document.getElementById("submitDropzoneFiles");
+                buton.addEventListener("click", function () {
+                    fileSize = myDropzone.getAcceptedFiles().length;
+                    if (fileSize === 0) {
+                        setTimeout(function () { location.href = "/Paper/PaperDetail?bId=" + bId }, 500);
+                    } else {
+                        myDropzone.options.url = "/Paper/ImageUpload?bId=" + bId;
+                        myDropzone.processQueue(); // Karşıya yükleme başlatılıyor
+                    }
+                });
+            }
+        };
+
+        $('#newPaperForm').on('submit', function () {
+            var data = $(this).serializeArray();
+            $.ajax({
+                url: '/Paper/NewPaper',
+                method: 'POST',
+                data: data,
+                success: function (result) {
+                    if (result.sonuc) {
+                        $("#alerttopright").fadeIn(350);
+                        bId = result.nesne.id;
+                        $('#submitDropzoneFiles').click();
+                    } else {
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text: result.mesaj,
+                            icon: 'error'
+                        });
+                    }
+                }
+            });
+            return false;
+        });
+    });
+
+
+</script>

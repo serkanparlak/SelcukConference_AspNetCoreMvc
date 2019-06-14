@@ -1,0 +1,177 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Areas.Admin.Models.MemberListViewModel
+
+@{
+    Layout = "AdminLayout";
+    int i = 1;
+}
+<style>
+    #search-bar > td {
+        vertical-align: middle;
+        border: none
+    }
+</style>
+
+<div class="row bg-title" style="padding-top: 15px">
+    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+        <h4>@Localizer["uye"] @Localizer["hizliIslemler"]</h4>
+    </div>
+    <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="/Admin">@Localizer["anasayfa"]</a></li>
+            <li><a href="/Admin/Home/Members">@Localizer["uyeler"]</a></li>
+            <li class="active">@Localizer["hizliIslemler"]</li>
+        </ol>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <form action="/Admin/Home/MemberFastOperations" id="member-search-form" method="post">
+                            <tr id="search-bar">
+                                <td></td>
+                                <td>
+                                    <input class="form-control" type="text" placeholder="@Localizer["ad"], @Localizer["kurum"]" name="IsimSoyisimKurum" id="IsimSoyisimKurum" value="@Model.MemberSearch.IsimSoyisimKurum">
+                                </td>
+                                <td>
+                                    <select class="form-control fastsearch" name="AktifPasif">
+                                        <option value="0" selected>@Localizer["tumDurumlar"]</option>
+                                        <option value="1"
+                                                @if (Model.MemberSearch.AktifPasif == 1) { <text> selected</text>}>
+                                            @Localizer["aktif"]
+                                        </option>
+                                        <option value="2"
+                                                @if (Model.MemberSearch.AktifPasif == 2) { <text> selected</text>}>
+                                            @Localizer["pasif"]
+                                        </option>
+                                    </select>
+                                </td>
+                                <td colspan="3">
+                                    <select class="form-control fastsearch" name="YazarEditorHakem">
+                                        <option value="0" selected>@Localizer["tumYetkiler"]</option>
+                                        <option value="1"
+                                                @if (Model.MemberSearch.YazarEditorHakem == 1) { <text> selected</text>}>
+                                            @Localizer["yazar"]
+                                        </option>
+                                        <option value="2"
+                                                @if (Model.MemberSearch.YazarEditorHakem == 2) { <text> selected</text>}>
+                                            @Localizer["editor"]
+                                        </option>
+                                        <option value="3"
+                                                @if (Model.MemberSearch.YazarEditorHakem == 3) { <text> selected</text>}>
+                                            @Localizer["hakem"]
+                                        </option>
+                                    </select>
+                                </td>
+                                <td colspan="2">
+                                    <select class="form-control fastsearch" style="width: 90%" name="BilimselOrganizasyon">
+                                        <option value="0" selected>@Localizer["tumKomiteler"]</option>
+                                        <option value="1"
+                                                @if (Model.MemberSearch.BilimselOrganizasyon == 1) { <text> selected</text>}>
+                                            @Localizer["bilimselKomite"]
+                                        </option>
+                                        <option value="2"
+                                                @if (Model.MemberSearch.BilimselOrganizasyon == 2) { <text> selected</text>}>
+                                            @Localizer["organizasyonKomite"]
+                                        </option>
+                                    </select>
+                                </td>
+                                <td hidden="">
+                                    <button type="submit"></button>
+                                    @*<button type="submit" class="btn btn-primary btn-outline btn-circle btn-lg" style="margin-left: 28%" hidden=""><i class="icon-magnifier"></i></button>*@
+                                </td>
+                            </tr>
+                        </form>
+
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th>@Localizer["ad"]</th>
+                            <th>@Localizer["durum"]</th>
+                            <th>@Localizer["yazar"]</th>
+                            <th>@Localizer["editor"]</th>
+                            <th>@Localizer["hakem"]</th>
+                            <th>@Localizer["bilimselKomite"]</th>
+                            <th>@Localizer["organizasyonKomite"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.UyeList)
+                        {
+                            <tr myvalue="@item.Id">
+                                <td class="text-center">@(i++)</td>
+                                <td class="isimarama">
+                                    <span class="font-medium">@item.Unvan @item.Adi @item.Soyadi</span>
+                                    <br><span class="text-muted">@item.Kurum</span>
+                                </td>
+                                <td>
+                                    <input type="checkbox" myvalue="Aktif" @if (item.Aktif) { <text> checked</text>} class="js-switch" data-color="#555" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" myvalue="Yazar" @if (item.Yazar) { <text> checked</text>} class="js-switch" data-color="#555" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" myvalue="Editor" @if (item.Editor) { <text> checked</text>} class="js-switch" data-color="#555" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" myvalue="Hakem" @if (item.Hakem) { <text> checked</text>} class="js-switch" data-color="#555" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" myvalue="BilimselKomite" @if (item.BilimselKomite) { <text> checked</text>} class="js-switch" data-color="#555" />
+                                </td>
+                                <td>
+                                    <input type="checkbox" myvalue="Organizasyonkomite" @if (item.OrganizasyonKomite) { <text> checked</text>} class="js-switch" data-color="#555" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+
+    $(document).ready(function () {
+        $('.js-switch').each(function () {
+            Switchery($(this)[0], $(this).data());
+        });
+
+        $(':checkbox').on('change', function () {
+            var kolon = $(this).attr('myvalue');
+            var deger = $(this).is(":checked");
+            var uyeid = $(this).closest('tr').attr('myvalue');
+            $.getJSON('/Admin/Home/FastEdit',
+                { 'kolon': kolon, 'deger': deger, 'uyeid': uyeid },
+                function (sonuc) {
+                    if (!sonuc) {
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text: sonuc,
+                            icon: 'error'
+                        });
+                    }
+                });
+        });
+
+        $('.fastsearch').on("change", function () { $('#member-search-form').submit(); });
+
+        $('#IsimSoyisimKurum').on("keyup", function () {
+            var aranan = this.value.toLowerCase();
+            $('.isimarama').each(function (i, value) {
+                var metin = value.innerText.toLowerCase();
+                var varmi = metin.indexOf(aranan);
+                if (varmi === -1) {
+                    $(this).closest('tr').hide();
+                } else {
+                    $(this).closest('tr').show();
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,152 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@using System.Globalization
+@model DataAccess.Entities.Genel
+
+@{
+    Layout = "AdminLayout";
+}
+
+<link href="~/plugins/dropify/css/dropify.min.css" rel="stylesheet" />
+<link href="~/plugins/bootstrap-datepicker/bootstrap-datepicker.min.css" rel="stylesheet" />
+<script src="~/plugins/dropify/js/dropify.min.js"></script>
+<script src="~/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+
+<div class="row bg-title" style="padding-top: 15px">
+    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+        <h4>@Localizer["genelIslemler"]</h4>
+    </div>
+    <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="/Admin">@Localizer["anasayfa"]</a></li>
+            <li class="active">@Localizer["genel"]</li>
+        </ol>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-8">
+        <div class="white-box">
+            <h3 class="box-title">@Localizer["bannerDuzenle"]</h3>
+            <form action="/Admin/Home/GenelData" id="image-upload-form" method="post" enctype="multipart/form-data">
+                <input type="file" id="input-file-events" name="banner" data-height="202" data-default-file="@Model.BannerYol" data-show-remove="false" data-max-file-size="5M" data-allowed-file-extensions="jpg jpeg png" />
+                <input type="button" class="btn btn-primary btn-outline m-t-15 disabled" id="btnFileUpload" onclick="" value="@Localizer["yukle"]" />
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="white-box">
+            <style>
+                .datepicker-inline {
+                    margin: 0 auto
+                }
+            </style>
+            <h3 class="box-title">@Localizer["konferansTarihi"]</h3>
+            <div class="text-center">
+                <h5 class="box-title m-t-30"></h5>
+                <div id="datepicker-inline"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/plugins/bootstrap-datepicker/bootstrap-datepicker.tr.js"></script>
+<script>
+    var resimYuklemeBasarili = @Json.Serialize(Localizer["resimYuklemeBasarili"].Value);
+    var eskiResimSilinecek = @Json.Serialize(Localizer["eskiResimSilinecek"].Value);
+    var tarihGuncellendi = @Json.Serialize(Localizer["tarihGuncellendi"].Value);
+    var birDosyaSecin = @Json.Serialize(Localizer["birDosyaSecin"].Value);
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var tamam = @Json.Serialize(Localizer["tamam"].Value);
+    var dilTr = @Json.Serialize(Localizer.CurrentLanguage == "tr");
+
+
+    $(document).ready(function () {
+        //--İşlem Sonucu Bildirisi--
+        var resimsonuc = '@TempData["resimYukleme"]';
+        if (resimsonuc.length > 0 && resimsonuc === 'True') {
+            $.toast({
+                heading: resimYuklemeBasarili,
+                text: '',
+                icon: 'success'
+            });
+        } else if (resimsonuc.length > 0) {
+            $.toast({
+                heading: birSorunOlustu,
+                text: resimsonuc,
+                icon: 'error'
+            });
+        }
+        //--Son--
+
+        // Translated Dropify
+        $('#input-file-events').dropify({
+            messages: {
+                default: birDosyaSecin
+                , replace: birDosyaSecin
+                , error: birSorunOlustu
+            }
+        });
+        $('#input-file-events').change(function () {
+            var fileCount = $("#input-file-events")[0].files.length;
+            if (fileCount === 0) {
+                $("#image-upload-form").find("#btnFileUpload").attr("onclick", "").addClass("disabled");
+            } else {
+                $("#image-upload-form").find("#btnFileUpload").attr("onclick", "ResimKaydet()").removeClass("disabled");
+            }
+        });
+
+        var dateConf = jQuery('#datepicker-inline').datepicker({
+            language: dilTr ? 'tr' : '',
+            todayHighlight: true,
+            format: "dd.mm.yyyy"
+        });
+
+        var confDate;
+        @if (Model.KonferanTarihi != null)
+        {
+            <text>
+                confDate = '@(((DateTime)Model.KonferanTarihi).ToString(new CultureInfo("tr")))';
+            </text>
+        }
+        if (confDate.length > 0) {
+            confDate = confDate.split(' ')[0];
+            dateConf.datepicker('setDate', confDate);
+        }
+
+        dateConf.on('click', function () {
+            var changedDate = $(this).data('datepicker').getFormattedDate();
+            if (confDate !== changedDate) {
+                confDate = changedDate;
+                $.getJSON('/Admin/Home/GenelData', { date: confDate }, function (sonuc) {
+                    if (sonuc) {
+                        $.toast({
+                            heading: tarihGuncellendi,
+                            text: '',
+                            icon: 'success'
+                        });
+                    } else {
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text : '',
+                            icon: 'error'
+                        });
+                    }
+                });
+            }
+        });
+
+    });
+
+    function ResimKaydet() {
+        swal({
+            title: eskiResimSilinecek,
+            text: "",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#555",
+            confirmButtonText: tamam
+        }, function () {
+            $('#image-upload-form').submit();
+        });
+    }
+</script>

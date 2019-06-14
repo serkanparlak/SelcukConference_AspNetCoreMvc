@@ -1,0 +1,142 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Areas.Admin.Models.MemberDetailViewModel
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h4 class="modal-title text-center text-uppercase text-muted"><strong>@Localizer["profil"]</strong> </h4>
+</div>
+<div class="modal-body">
+    <form id="memberEditForm" method="post">
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="Unvan" class="control-label">@Localizer["unvan"]</label>
+                <input class="form-control" type="text" required="" name="Unvan" id="Unvan" value="@Model.Uye.Unvan">
+            </div>
+        </div>
+        <div class="form-group  col-md-6">
+            <div class="col-xs-12">
+                <label for="Kurum" class="control-label">@Localizer["kurum"]</label>
+                <input class="form-control" type="text" required="" name="Kurum" id="Kurum" value="@Model.Uye.Kurum">
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="Adi" class="control-label">@Localizer["ad"]</label>
+                <input class="form-control" type="text" required="" name="Adi" id="Adi" value="@Model.Uye.Adi">
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="Soyadi" class="control-label">@Localizer["soyad"]</label>
+                <input class="form-control" type="text" required="" name="Soyadi" id="Soyadi" value="@Model.Uye.Soyadi">
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="Telefon" class="control-label">@Localizer["telefon"]</label>
+                <input class="form-control" type="text" required="" name="Telefon" id="Telefon" value="@Model.Uye.Telefon">
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="Mail" class="control-label">@Localizer["mail"]</label>
+                <input class="form-control" type="email" required="" name="Mail" id="Mail" onblur="emailKontrol()" myValue="0" value="@Model.Uye.Mail">
+                <span class="text-danger" id="mailMesaj" style="display: none">@Localizer["dahaOnceKullanildi"]</span>
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="UlkeList" class="control-label">@Localizer["ulke"]</label>
+                @Html.DropDownList("UlkeList", new SelectList(Model.Ulkeler, "Id", "UlkeAdi", Model.Uye.Sehir.UlkeId), new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group col-md-6">
+            <div class="col-xs-12">
+                <label for="SehirId" class="control-label">@Localizer["sehir"]</label>
+                @Html.DropDownList("SehirId", new SelectList(Model.Sehirler, "Id", "SehirAdi", Model.Uye.SehirId), new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group col-md-12">
+            <div class="col-xs-12">
+                <label for="Adres" class="control-label">@Localizer["adres"]</label>
+                <textarea class="form-control" rows="3" style="min-width: 100%" name="Adres" id="Adres">@Model.Uye.Adres</textarea>
+            </div>
+        </div>
+
+        <div class="row"></div>
+        <div class="modal-footer b-none p-0 p-r-30">
+            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">@Localizer["kapat"]</button>
+            <button type="submit" class="btn btn-primary waves-effect waves-light">@Localizer["kaydet"]</button>
+        </div>
+
+    </form>
+</div>
+
+
+
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var islemBasarili = @Json.Serialize(Localizer["islemBasarili"].Value);
+
+    $(document).ready(function () {
+        $("#UlkeList").on('change', function () {
+            var ulkeid = $("#UlkeList").val();
+            $.ajax({
+                url: '/Home/GetCityList',
+                data: { "ulkeId": ulkeid },
+                success: function (sehirler) {
+                    $('#SehirId').empty();
+                    for (var i = 0; i < sehirler.length; i++) {
+                        $('#SehirId').append($("<option></option>").attr("value", sehirler[i].id).text(sehirler[i].sehirAdi));
+                    }
+                }
+            });
+        });
+
+        $("#memberEditForm").submit(function() {
+            var mail = $('#Mail');
+            if (mail.attr('myValue') !== "0") {
+                mail.focus();
+            } else {
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '/Home/MemberEdit',
+                    data: formData,
+                    method: 'POST',
+                    success: function(result) {
+                        if (result) {
+                            $('#myProfileName').text($('#Adi').val());
+                            $('.modal-header button').click();
+                            $.toast({
+                                heading: islemBasarili,
+                                text: "",
+                                icon: 'success'
+                            });
+                        } else {
+                            $.toast({
+                                heading: birSorunOlustu,
+                                text: "",
+                                icon: 'error'
+                            });
+                        }
+                    }
+                });
+            }
+            return false;
+        });
+    });
+
+    function emailKontrol() {
+        var mail = $('#Mail').val();
+        $.getJSON('/Home/MailKontrolWithId', { "mail": mail }, function (sonuc) {
+            if (!sonuc) {
+                $('#Mail').attr('myValue', '1');
+                $('#mailMesaj').fadeIn();
+            } else {
+                $('#Mail').attr('myValue', '0');
+                $('#mailMesaj').fadeOut();
+            }
+        });
+    }
+</script>
+

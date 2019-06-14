@@ -1,0 +1,259 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Models.PaperViewModel
+@{
+    Layout = "UserLayout";
+}
+<style>
+    .inbox-center td {
+        vertical-align: middle;
+    }
+
+    .btn-link {
+        cursor: pointer;
+    }
+</style>
+<div id="page-wrapper">
+    <div class="container-fluid">
+        <div class="row bg-title">
+            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+                <h4 class="page-title">@Localizer["bildiriler"]</h4>
+            </div>
+            <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="/Home">@Localizer["anasayfa"]</a></li>
+                    <li class="active">@Localizer["bildiriler"]</li>
+                </ol>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-12">
+                <div class="white-box">
+                    <!--Tabs-->
+                    <section class="m-t-40">
+                        <div class="sttabs tabs-style-linebox">
+                            <nav>
+                                <ul>
+                                    @if (Model.Oturum.Yazar)
+                                    {
+                                        <li><a href="#section-linebox-1"><span>@Localizer["bildirilerim"]</span></a></li>
+                                    }
+                                    @if (Model.Oturum.Editor)
+                                    {
+                                        <li><a href="#section-linebox-2"><span>@Localizer["editorKarari"]</span></a></li>
+                                    }
+                                    @if (Model.Oturum.Hakem)
+                                    {
+                                        <li><a href="#section-linebox-3"><span>@Localizer["hakemKarari"]</span></a></li>
+                                    }
+                                </ul>
+                            </nav>
+                            <div class="content-wrap">
+                                <!--Bildirilerim İtems Start-->
+                                @if (Model.Oturum.Yazar)
+                                {
+                                    <section id="section-linebox-1" myListBy="yazar">
+                                        <div class="inbox-center" style="min-height: 300px">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="p-l-0" style="padding-bottom: 6px">
+                                                            <a href="/Paper/NewPaper">
+                                                                <button class="btn btn-primary waves-float waves-effect waves-light" style="border-radius: 0; height: 38px" onclick="newPaperBtn">@Localizer["yeniBildiri"]</button>
+                                                            </a>
+                                                        </th>
+                                                        <th colspan="2">
+                                                            <div class="btn-group btn-block">
+                                                                <input type="text" class="KonuAra form-control" placeholder="@Localizer["konuAra"]" />
+                                                            </div>
+                                                        </th>
+                                                        <th colspan="2" style="padding-right: 0">
+                                                            <div class="btn-group pull-right">
+                                                                <button type="button" class="fcbtn btn-1b btn-outline btn-danger dropdown-toggle" data-toggle="dropdown" aria-expanded="False"> <b class="btn-list-type">@Localizer["tumu"]</b> <b class="caret"></b> </button>
+                                                                <ul class="dropdown-menu" role="menu">
+                                                                    <li myvalue="1"><a href="localhost:voi(0)">@Localizer["tumu"]</a></li>
+                                                                    <li myvalue="2"><a href="localhost:voi(0)">@Localizer["bekliyor"]</a></li>
+                                                                    <li class="divider"></li>
+                                                                    <li myvalue="3"><a href="localhost:voi(0)">@Localizer["onaylandi"]</a></li>
+                                                                    <li myvalue="4"><a href="localhost:voi(0)">@Localizer["revizyon"]</a></li>
+                                                                    <li myvalue="5"><a href="localhost:voi(0)">@Localizer["ret"]</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <thead>
+                                                    <tr>
+                                                        <th width="50" class="text-center">#</th>
+                                                        <th>@Localizer["konu"]</th>
+                                                        <th>@Localizer["durum"]</th>
+                                                        <th colspan="2" class="text-right">@Localizer["duzenlemeTarihi"]</th>
+                                                    </tr>
+                                                </thead>
+                                                <!--Render Partial-->
+                                                <tbody>
+                                                    @Html.Partial("_PaperList", Model.Bildirilerim)
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </section>
+                                }
+                                <!--Bildirilerim İtems End-->
+                                <!--Editör Olduklarım İtems Start-->
+                                @if (Model.Oturum.Editor)
+                                {
+                                    <section id="section-linebox-2" myListBy="editor">
+                                        <div class="inbox-center" style="min-height: 300px">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="2" class="p-l-0">
+                                                            <div class="btn-group btn-block">
+                                                                <input type="text" class="IsimAra form-control" placeholder="@Localizer["yazarAra"]" />
+                                                            </div>
+                                                        </th>
+                                                        <th>
+                                                            <div class="btn-group btn-block">
+                                                                <input type="text" class="KonuAra form-control" placeholder="@Localizer["konuAra"]" />
+                                                            </div>
+                                                        </th>
+                                                        <th colspan="3" style="padding-right: 0">
+                                                            <div class="btn-group pull-right">
+                                                                <button type="button" class="fcbtn btn-1b btn-outline btn-danger dropdown-toggle" data-toggle="dropdown" aria-expanded="False"> <b class="btn-list-type">@Localizer["tumu"]</b> <b class="caret"></b> </button>
+                                                                <ul class="dropdown-menu" role="menu">
+                                                                    <li myvalue="1"><a href="localhost:voi(0)">@Localizer["tumu"]</a></li>
+                                                                    <li myvalue="2"><a href="localhost:voi(0)">@Localizer["bekliyor"]</a></li>
+                                                                    <li class="divider"></li>
+                                                                    <li myvalue="3"><a href="localhost:voi(0)">@Localizer["onaylandi"]</a></li>
+                                                                    <li myvalue="4"><a href="localhost:voi(0)">@Localizer["revizyon"]</a></li>
+                                                                    <li myvalue="5"><a href="localhost:voi(0)">@Localizer["ret"]</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <thead>
+                                                    <tr>
+                                                        <th width="50" class="text-center">#</th>
+                                                        <th>@Localizer["ad"]</th>
+                                                        <th>@Localizer["konu"]</th>
+                                                        <th>@Localizer["durum"]</th>
+                                                        <th colspan="2" class="text-right">@Localizer["duzenlemeTarihi"]</th>
+                                                    </tr>
+                                                </thead>
+                                                <!--Render Partial-->
+                                                <tbody>
+                                                    @Html.Partial("_PaperList", Model.EditorBildirileri)
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </section>
+                                }
+                                <!--Editör Olduklarım İtems End-->
+                                <!--Hakem Olduklarım İtems Start-->
+                                @if (Model.Oturum.Hakem)
+                                {
+                                    <section id="section-linebox-3" myListBy="hakem">
+                                        <div class="inbox-center" style="min-height: 300px">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="2" class="p-l-0">
+                                                            <div class="btn-group btn-block">
+                                                                <input type="text" class="IsimAra form-control" placeholder="@Localizer["yazarAra"]" />
+                                                            </div>
+                                                        </th>
+                                                        <th>
+                                                            <div class="btn-group btn-block">
+                                                                <input type="text" class="KonuAra form-control" placeholder="@Localizer["konuAra"]" />
+                                                            </div>
+                                                        </th>
+                                                        <th colspan="3" style="padding-right: 0">
+                                                            <div class="btn-group pull-right">
+                                                                <button type="button" class="fcbtn btn-1b btn-outline btn-danger dropdown-toggle" data-toggle="dropdown" aria-expanded="False"> <b class="btn-list-type">@Localizer["tumu"]</b> <b class="caret"></b> </button>
+                                                                <ul class="dropdown-menu" role="menu">
+                                                                    <li myvalue="1"><a href="localhost:voi(0)">@Localizer["tumu"]</a></li>
+                                                                    <li myvalue="2"><a href="localhost:voi(0)">@Localizer["bekliyor"]</a></li>
+                                                                    <li class="divider"></li>
+                                                                    <li myvalue="3"><a href="localhost:voi(0)">@Localizer["onaylandi"]</a></li>
+                                                                    <li myvalue="4"><a href="localhost:voi(0)">@Localizer["revizyon"]</a></li>
+                                                                    <li myvalue="5"><a href="localhost:voi(0)">@Localizer["ret"]</a></li>
+                                                                </ul>
+                                                            </div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <thead>
+                                                    <tr>
+                                                        <th width="50" class="text-center">#</th>
+                                                        <th>@Localizer["ad"]</th>
+                                                        <th>@Localizer["konu"]</th>
+                                                        <th>@Localizer["durum"]</th>
+                                                        <th colspan="2" class="text-right">@Localizer["duzenlemeTarihi"]</th>
+                                                    </tr>
+                                                </thead>
+                                                <!--Render Partial-->
+                                                <tbody>
+                                                    @Html.Partial("_PaperList", Model.HakemBildirileri)
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </section>
+                                }
+                                <!--Hakem Olduklarım İtems Start-->
+                            </div>
+                            <!-- /content -->
+                        </div>
+                        <!-- /tabs -->
+                    </section>
+                    <!--Tabs-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/cbpFWTabs.js"></script>
+<script>
+    $(document).ready(function () {
+        [].slice.call(document.querySelectorAll('.sttabs')).forEach(function (el) {
+            new CBPFWTabs(el);
+        });
+
+        $('.content-wrap .dropdown-menu li').on('click', function () {
+            var listTypeName = this.innerText;
+            var listId = $(this).attr('myvalue');
+            var thisSection = $(this).closest("section");
+            var listBy = thisSection.attr('myListBy');
+            thisSection.find('.btn-list-type').text(listTypeName);
+            thisSection.find('tbody').load("/Paper/_PaperList", { 'listBy': listBy, 'listId': listId });
+        });
+
+        $('.IsimAra').on("keyup", function () {
+            var aranan = this.value.toLowerCase();
+            $(this).closest('section').find('.isimIcerik').each(function (i, value) {
+                var metin = value.textContent.toLowerCase();
+                var varmi = metin.indexOf(aranan);
+                if (varmi === -1) {
+                    $(this).closest('tr').hide();
+                } else {
+                    $(this).closest('tr').show();
+                }
+            });
+        });
+
+        $('.KonuAra').on("keyup", function () {
+            var aranan = this.value.toLowerCase();
+            $(this).closest('section').find('.konuIcerik').each(function (i, value) {
+                var metin = value.textContent.toLowerCase();
+                var varmi = metin.indexOf(aranan);
+                if (varmi === -1) {
+                    $(this).closest('tr').hide();
+                } else {
+                    $(this).closest('tr').show();
+                }
+            });
+        });
+
+
+    });
+</script>

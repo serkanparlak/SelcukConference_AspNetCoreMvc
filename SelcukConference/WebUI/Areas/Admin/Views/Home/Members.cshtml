@@ -1,0 +1,242 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Areas.Admin.Models.MemberListViewModel
+
+@{
+    Layout = "AdminLayout";
+    int i = 1;
+}
+<style>
+    #search-bar > td {
+        vertical-align: middle;
+        border: none
+    }
+</style>
+
+<div class="row bg-title" style="padding-top: 15px">
+    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+        <h4>@Localizer["uyeYonetimi"]</h4>
+    </div>
+    <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="/Admin">@Localizer["anasayfa"]</a></li>
+            <li class="active">@Localizer["uyeler"]</li>
+        </ol>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel">
+            @*<div class="panel-heading">Search Member</div>*@
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <form action="/Admin/Home/Members" id="member-search-form" method="post">
+                            <tr id="search-bar">
+                                <td width="70"></td>
+                                <td>
+                                    <input class="form-control" type="text" placeholder="@Localizer["ad"], @Localizer["kurum"]" name="IsimSoyisimKurum" value="@Model.MemberSearch.IsimSoyisimKurum">
+                                </td>
+                                <td>
+                                    <input class="form-control" type="text" placeholder="@Localizer["mail"], @Localizer["telefon"]" name="EmailTelefon" value="@Model.MemberSearch.EmailTelefon">
+                                </td>
+                                <td>
+                                    <select class="form-control" name="YazarEditorHakem">
+                                        <option value="0" selected>@Localizer["tumYetkiler"]</option>
+                                        <option value="1"
+                                                @if (Model.MemberSearch.YazarEditorHakem == 1) { <text> selected</text>}>
+                                            @Localizer["yazar"]
+                                        </option>
+                                        <option value="2"
+                                                @if (Model.MemberSearch.YazarEditorHakem == 2) { <text> selected</text>}>
+                                            @Localizer["editor"]
+                                        </option>
+                                        <option value="3"
+                                                @if (Model.MemberSearch.YazarEditorHakem == 3) { <text> selected</text>}>
+                                            @Localizer["hakem"]
+                                        </option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-control" name="AktifPasif">
+                                        <option value="0" selected>@Localizer["tumDurumlar"]</option>
+                                        <option value="1"
+                                                @if (Model.MemberSearch.AktifPasif == 1) { <text> selected</text>}>
+                                            @Localizer["aktif"]
+                                        </option>
+                                        <option value="2"
+                                                @if (Model.MemberSearch.AktifPasif == 2) { <text> selected</text>}>
+                                            @Localizer["pasif"]
+                                        </option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-primary btn-outline btn-circle btn-lg" style="margin-left: 28%"><i class="icon-magnifier"></i></button>
+                                </td>
+                            </tr>
+                        </form>
+
+                        <tr>
+                            <th width="70" class="text-center">#</th>
+                            <th>@Localizer["ad"]</th>
+                            <th>@Localizer["mail"]</th>
+                            <th>@Localizer["yetki"] & @Localizer["durum"]</th>
+                            <th>@Localizer["konum"]</th>
+                            <th width="220"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.UyeList)
+                        {
+                            <tr myvalue="@item.Id">
+                                <td class="text-center">@(i++)</td>
+                                <td>
+                                    <span class="font-medium">@item.Unvan @item.Adi @item.Soyadi</span>
+                                    <br><span class="text-muted">@item.Kurum</span>
+                                </td>
+                                <td>
+                                    @item.Mail
+                                    <br><span class="text-muted">@item.Telefon</span>
+                                </td>
+                                <td>
+                                    @if (item.Yazar)
+                                    {
+                                        <span class="label label-inverse">@Localizer["yazar"]</span>
+                                    }
+                                    @if (item.Editor)
+                                    {
+                                        <span class="label label-inverse">@Localizer["editor"]</span>
+                                    }
+                                    @if (item.Hakem)
+                                    {
+                                        <span class="label label-inverse">@Localizer["hakem"]</span>
+                                    }
+                                    <br />
+                                    <div style="margin-top: 2px">
+                                        @if (item.Aktif)
+                                        {
+                                            <span class="label label-info">@Localizer["aktif"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="label label-danger">@Localizer["pasif"]</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    @item.Sehir.SehirAdi
+                                    <br><span class="text-muted">@item.Sehir.Ulke.UlkeAdi</span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-info btn-outline btn-circle btn-lg m-r-5 btnDelete" title="@Localizer["sil"]"><i class="icon-trash"></i></button>
+                                    <button type="button" class="btn btn-info btn-outline btn-circle btn-lg m-r-5 btnChangePass" title="@Localizer["sifreyiDegistir"]"><i class="ti-key"></i></button>
+                                    <button type="button" class="btn btn-info btn-outline btn-circle btn-lg m-r-5 btnGoDetail" data-toggle="modal" data-target="#uyeDuzenModal" title="@Localizer["duzenle"]"><i class="ti-pencil-alt"></i></button>
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="uyeDuzenModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content blockUI">
+            <!--FORM-->
+
+        </div>
+    </div>
+</div>
+
+<script>
+    var enAzKarakter = @Json.Serialize(Localizer["enAz{0}Karakter", 6].Value);
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var islemBasarili = @Json.Serialize(Localizer["islemBasarili"].Value);
+    var sifreyiDegistir = @Json.Serialize(Localizer["sifreyiDegistir"].Value);
+    var eminMisin = @Json.Serialize(Localizer["eminMisin"].Value);
+    var yeniSifre = @Json.Serialize(Localizer["yeniSifre"].Value);
+    var sil = @Json.Serialize(Localizer["sil"].Value);
+
+    $(document).ready(function () {
+        //--İşlem Sonucu Bildirisi--
+        var sonuc = '@TempData["sonuc"]';
+        if (sonuc.length > 0 && sonuc === 'True') {
+            $.toast({
+                heading: islemBasarili,
+                text: '',
+                icon: 'success'
+            });
+        }else if (sonuc.length > 0) {
+            $.toast({
+                heading: birSorunOlustu,
+                text : sonuc,
+                icon: 'error'
+            });
+        }
+        //--Son--
+
+        $('.btnDelete').on('click', function() {
+            var uyeLi = $(this).closest('tr');
+            var uyeid = uyeLi.attr('myvalue');
+            swal({
+                title: eminMisin,
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: sil
+            }, function () {
+                $.getJSON("/Admin/Home/UyeSil/" + uyeid, function (result) {
+                    if (result) {
+                        $.toast({
+                            heading: islemBasarili,
+                            text: '',
+                            icon: 'success'
+                        });
+                        uyeLi.slideUp();
+                    } else {
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text : "",
+                            icon: 'error'
+                        });
+                    }
+                });
+            });
+        });
+
+        $('.btnChangePass').on('click', function () {
+            var uyeid = $(this).closest('tr').attr('myvalue');
+            swal({
+                title: sifreyiDegistir,
+                text: "",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                inputPlaceholder: yeniSifre
+            }, function (inputValue) {
+                if (inputValue === false) return false;
+                if (inputValue.length < 6) {
+                    swal.showInputError(enAzKarakter);
+                    return false;
+                }
+                $.getJSON('/Admin/Home/ChangePassword', { 'id': uyeid, 'sifre': inputValue }, function(sonuc) {
+                    if (sonuc) {
+                        swal(islemBasarili, inputValue, "success");
+                    } else {
+                        swal(birSorunOlustu, "", "error");
+                    }
+                });
+            });
+        });
+
+        $('.btnGoDetail').on('click', function () {
+            var uyeid = $(this).closest('tr').attr('myvalue');
+            $('#uyeDuzenModal .blockUI').load('/Admin/Home/_MemberDetail/' + uyeid);
+        });
+    });
+</script>

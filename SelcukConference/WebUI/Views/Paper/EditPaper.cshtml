@@ -1,0 +1,273 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Models.PaperEditViewModel
+@{
+    Layout = "UserLayout";
+}
+
+<link href="~/plugins/summernote/summernote.css" rel="stylesheet" />
+<link href="~/plugins/dropzone/dropzone.css" rel="stylesheet" />
+<style>
+    .dz-progress {
+        border: 1px solid #333;
+    }
+
+    .dz-remove {
+        transition: 0.4s;
+        position: relative;
+        top: -30px;
+        z-index: 20;
+        background-color: black;
+        background-color: rgba(0,0,0,0.4);
+        color: white;
+        width: 45px;
+        border-radius: 12px;
+        margin: 0 auto;
+    }
+
+        .dz-remove:hover {
+            color: white;
+            background-color: #333;
+        }
+</style>
+<div id="page-wrapper">
+    <div class="container-fluid">
+        <div class="row bg-title">
+            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+                <h4 class="page-title">@Localizer["bildiriDuzenle"]</h4>
+            </div>
+            <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="/Home">@Localizer["anasayfa"]</a></li>
+                    <li><a href="/Paper/Papers">@Localizer["bildiriler"]</a></li>
+                    <li class="active">@Localizer["bildiriDuzenle"]</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="white-box">
+                    <form action="#" id="editPaperForm" enctype="multipart/form-data">
+                        <input type="text" name="Id" value="@Model.Bildiri.Id" hidden="" />
+                        <div class="form-group">
+                            <h4><i class="fa fa-quote-left"></i> @Localizer["konu"]</h4>
+                            <input class="form-control" name="Konu" required="" value="@Model.Bildiri.Konu">
+                        </div>
+                        <div class="form-group">
+                            <h4><i class="fa fa-quote-left"></i> @Localizer["aciklama"]</h4>
+                            <textarea class="summernote form-control" name="Aciklama" rows="15">@Html.Raw(Model.Bildiri.Aciklama)</textarea>
+                        </div>
+
+                        <h4><i class="fa fa-link m-b-10"></i> @Localizer["ek"] (*@Localizer["max3Dosya"])</h4>
+                        <div class="row">
+                            @foreach (var item in Model.Bildiri.Ek)
+                            {
+                                var path = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", item.EkYol.Substring(1).Replace("/", "\\"));
+                                var ext = System.IO.Path.GetExtension(path).ToLower();
+                                <div class="col-sm-2 col-xs-4 b-r text-center fileContent" myValue="@item.Id">
+                                    <input type="button" value="@Localizer["sil"]" class="fcbtn btn-outline btn-danger btn-block silButon" />
+                                    <div class="onayKutusu" hidden="">
+                                        <small class="text-center text-muted">Kalıcı Silinecek !</small>
+                                        <button type="button" class="btn btn-outline btn-primary btn-block reddetBtn">@Localizer["vazgec"]</button>
+                                        <input type="button" value="@Localizer["sil"]" class="btn btn-outline btn-danger btn-block onaylaBtn" />
+                                    </div>
+                                    <br />
+                                    @if (!".jpeg .jpg .png .gif".Contains(ext))
+                                    {
+                                        if (ext == ".pdf")
+                                        {
+                                            <a href="@item.EkYol" class="text-center"> <i class="mdi mdi-file-pdf fa-5x"></i> PDF @Localizer["dosyasi"]</a>
+                                        }
+                                        else if (ext == ".doc" || ext == ".docx")
+                                        {
+                                            <a href="@item.EkYol" class="text-center"> <i class="mdi mdi-file-word fa-5x"></i><br /> Word @Localizer["dosyasi"] </a>
+                                        }
+                                        else if (ext == ".xls" || ext == ".xlsx")
+                                        {
+                                            <a href="@item.EkYol" class="text-center"> <i class="mdi mdi-file-excel fa-5x"></i> Excel @Localizer["dosyasi"] </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@item.EkYol" class="text-center"> <i class="mdi mdi-file fa-5x"></i><br /> @ext.Substring(1).ToUpper() @Localizer["dosyasi"] </a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <a href="@item.EkYol" target="_blank"> <img class="img-responsive" alt="attachment" src="@item.EkYol" /></a>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div id="myDropzone" class="dropzone m-t-10" style="border: 1px solid #ccc" @if (Model.Bildiri.Ek.Count == 3) { <text> hidden="" </text> }>
+                            <div class="dz-message">
+                                <i class="fa fa-cloud-upload" style="font-size: 50px"></i>
+                                <h3>@Localizer["birDosyaSecin"]</h3>
+                            </div>
+                            <div class="fallback">
+                                <input name="file" type="file" multiple />
+                            </div>
+                            <input type="button" id="submitDropzoneFiles" value="" hidden="" />
+                            <input type="button" id="deleteFile" value="" hidden="" />
+                        </div>
+
+                        <hr>
+                        <div class="btn-group-lg">
+                            <button type="submit" class="btn-lg btn-primary waves-effect waves-light" style="border-radius: 0">@Localizer["guncelle"]</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/plugins/summernote/summernote.min.js"></script>
+<script src="~/plugins/dropzone/dropzone.js"></script>
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var islemBasarili = @Json.Serialize(Localizer["islemBasarili"].Value);
+    var sil = @Json.Serialize(Localizer["sil"].Value);
+
+    $(document).ready(function () {
+        $('.summernote').summernote({ height: 200 });
+
+        var bId = '@Model.Bildiri.Id';
+        var oldFiles = parseInt('@Model.Bildiri.Ek.Count');
+        var fileSize = 0;
+        var outerDropzone;
+        //Dropzone.autoDiscover = false;
+        Dropzone.options.myDropzone = {
+            url: "/Paper/ImageUpload?bId=" + bId,
+            paramName: "file",
+            uploadMultiple: true,
+            maxFilesize: 5,// max dosya boyutu MB cinsinden
+            maxFiles: 3 - oldFiles, // max dosya sayısı
+            parallelUploads: 3,//paralel adedi
+            autoProcessQueue: false,
+            acceptedFiles: "image/*,.xlsx,.xls,.pdf,.doc,.docx,.rar,.zip",
+            init: function () {
+                var myDropzone = this;
+                outerDropzone = this;
+                this.on("addedfile", function (file) {
+                    var removeButton = Dropzone.createElement(
+                        "<a title=" + sil + " class='dz-remove' href='javascript:undefined;' data-dz-remove=''>" +
+                        "<i class='mdi mdi-delete-circle' style='font-size: 30px;cursor:pointer'></i>" +
+                        "</a>");
+                    removeButton.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        myDropzone.removeFile(file);
+                    });
+                    file.previewElement.appendChild(removeButton);
+                });
+
+                this.on("complete", function (file) {
+                    if (file.accepted) {
+                        fileSize--;
+                        if (fileSize === 0) {
+                            setTimeout(function () { location.href = "/Paper/PaperDetail?bId=" + bId }, 500);
+                        }
+                    }
+                });
+
+                var buton = document.getElementById("submitDropzoneFiles");
+                buton.addEventListener("click", function () {
+                    fileSize = myDropzone.getAcceptedFiles().length;
+                    if (fileSize === 0) {
+                        setTimeout(function () { location.href = "/Paper/PaperDetail?bId=" + bId }, 500);
+                    } else {
+                        myDropzone.processQueue(); // Karşıya yükleme başlatılıyor
+                    }
+                });
+
+                var butonSil = document.getElementById("deleteFile");
+                butonSil.addEventListener("click", function () {
+                    myDropzone.options.maxFiles += 1;
+                });
+            }
+        };
+
+        $('#editPaperForm').on('submit', function () {
+            var data = $(this).serializeArray();
+            $.ajax({
+                url: '/Paper/EditPaper',
+                method: 'POST',
+                data: data,
+                success: function (result) {
+                    if (result.sonuc) {
+                        $('#submitDropzoneFiles').click();
+                    } else {
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text: result.mesaj,
+                            icon: 'error'
+                        });
+                    }
+                }
+            });
+            return false;
+        });
+
+        $('.fileContent .silButon').on('click', function() {
+            $(this).hide();
+            var fileContent = $(this).closest('.fileContent');
+            fileContent.find('.onayKutusu').show("fast");
+        });
+        $('.fileContent .reddetBtn').on('click', function() {
+            var fileContent = $(this).closest('.fileContent');
+            fileContent.find('.onayKutusu').hide();
+            fileContent.find('.silButon').show();
+        });
+        $('.fileContent .onaylaBtn').on('click', function () {
+            var fileContent = $(this).closest('.fileContent');
+            var ekId = fileContent.attr('myValue');
+            fileContent.hide("slow").siblings();
+            $.ajax({
+                url: '/Paper/ImageRemove',
+                data: { 'ekId': ekId },
+                method: 'POST',
+                success: function(result) {
+                    if (result.sonuc) {
+                        $('#myDropzone').slideDown("fast");
+                        $('#deleteFile').click(); // dosya limitini 1 artırır
+                        $.toast({
+                            heading: islemBasarili,
+                            text: "",
+                            icon: 'success'
+                        });
+                    } else {
+                        fileContent.show("slow").siblings();
+                        $.toast({
+                            heading: birSorunOlustu,
+                            text: result.mesaj,
+                            icon: 'warning'
+                        });
+                    }
+
+                }
+            });
+
+            //$.getJSON("/Paper/ImageRemove", { 'ekId': ekId }, function(result) {
+            //    if (result.sonuc) {
+            //        $('#myDropzone').slideDown("fast");
+            //        $('#deleteFile').click(); // dosya limitini 1 artırır
+            //        $.toast({
+            //            heading: 'İşlem Başarılı',
+            //            text: "",
+            //            icon: 'success'
+            //        });
+            //    } else {
+            //        fileContent.show("slow").siblings();
+            //        $.toast({
+            //            heading: 'Opps!',
+            //            text: result.mesaj,
+            //            icon: 'warning'
+            //        });
+            //    }
+
+            //});
+
+        });
+    });
+
+</script>

@@ -1,0 +1,142 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@using System.Globalization
+@model WebUI.Areas.Admin.Models.ContentViewModel
+
+@{
+    Layout = "UserLayout";
+    var dilTr = Localizer.CurrentLanguage == "tr";
+}
+<link href="~/plugins/back-counter/demo.css" rel="stylesheet" />
+
+<div id="page-wrapper">
+    <div class="container-fluid">
+        <div class="row bg-title">
+            <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+                <h4 class="page-title">
+                    @(dilTr ? Model.ActiveMenu.MenuAdi : Model.ActiveMenu.MenuAdiEng)
+                </h4>
+            </div>
+            <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+                <ol class="breadcrumb">
+                    <li><a href="/Home">@Localizer["anasayfa"]</a></li>
+                    @if (Model.UstMenu != null)
+                    {
+                        <li>@(dilTr ? Model.ActiveMenu.MenuAdi : Model.ActiveMenu.MenuAdiEng)</li>
+                    }
+                    <li class="active">@(dilTr ? Model.ActiveMenu.MenuAdi : Model.ActiveMenu.MenuAdiEng)</li>
+                </ol>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 25px">
+            <div class="col-md-12 col-xs-12 col-sm-12 col-lg-12">
+                @*<div class="mainpanel"></div>*@
+                <img style="width: 100%" src="@Model.GenelData.BannerYol" />
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="white-box">
+                    @Html.Raw(dilTr ? Model.ActiveMenu.SayfaIcerik : Model.ActiveMenu.SayfaIcerikEng)
+                </div>
+            </div>
+        </div>
+
+        <!--Counter *****************************************************-->
+
+        <div class="countdown countdown-container counter-pattern" style="padding: 20px">
+            <div class="clock row">
+                <div class="clock-item clock-days countdown-time-value col-md-3 col-xs-6 col-sm-3 col-lg-3">
+                    <div class="wrap">
+                        <div class="inner">
+                            <div id="canvas-days" class="clock-canvas"></div>
+                            <div class="text">
+                                <p class="val"></p>
+                                <p class="type-days type-time">@Localizer["gun"]</p>
+                            </div><!-- /.text -->
+                        </div><!-- /.inner -->
+                    </div><!-- /.wrap -->
+                </div><!-- /.clock-item -->
+                <div class="clock-item clock-hours countdown-time-value col-md-3 col-xs-6 col-sm-3 col-lg-3">
+                    <div class="wrap">
+                        <div class="inner">
+                            <div id="canvas-hours" class="clock-canvas"></div>
+                            <div class="text">
+                                <p class="val"></p>
+                                <p class="type-hours type-time">@Localizer["saat"]</p>
+                            </div><!-- /.text -->
+                        </div><!-- /.inner -->
+                    </div><!-- /.wrap -->
+                </div><!-- /.clock-item -->
+                <div class="clock-item clock-minutes countdown-time-value col-md-3 col-xs-6 col-sm-3 col-lg-3">
+                    <div class="wrap">
+                        <div class="inner">
+                            <div id="canvas-minutes" class="clock-canvas"></div>
+                            <div class="text">
+                                <p class="val"></p>
+                                <p class="type-minutes type-time">@Localizer["dakika"]</p>
+                            </div><!-- /.text -->
+                        </div><!-- /.inner -->
+                    </div><!-- /.wrap -->
+                </div><!-- /.clock-item -->
+                <div class="clock-item clock-seconds countdown-time-value col-md-3 col-xs-6 col-sm-3 col-lg-3">
+                    <div class="wrap">
+                        <div class="inner">
+                            <div id="canvas-seconds" class="clock-canvas"></div>
+                            <div class="text">
+                                <p class="val"></p>
+                                <p class="type-seconds type-time">@Localizer["saniye"]</p>
+                            </div><!-- /.text -->
+                        </div><!-- /.inner -->
+                    </div><!-- /.wrap -->
+                </div><!-- /.clock-item -->
+            </div><!-- /.clock -->
+        </div>
+
+        <!--/Counter ****************************************************-->
+    </div>
+</div>
+
+<script src="~/plugins/back-counter/kinetic.js"></script>
+<script src="~/plugins/back-counter/jquery.final-countdown.js"></script>
+<script type="text/javascript">
+    $('document').ready(function () {
+        'use strict';
+        @if (Model.GenelData.KonferanTarihi != null)
+        {
+            <text>
+                var konT = '@(((DateTime)Model.GenelData.KonferanTarihi).ToString(new CultureInfo("tr")))';
+                konT = konT.split(' ')[0].split('.');
+                //var start = Math.floor((new Date("5/19/2018")).getTime() / 1000);
+                var end = Math.floor((new Date(konT[1]+"."+konT[0]+"."+konT[2])).getTime() / 1000);
+                var now = Math.floor((new Date).getTime() / 1000);
+                $('.countdown').final_countdown({
+                    'start': 0,
+                    'end': end,
+                    'now': now,
+                    seconds: {
+                        borderColor: '#8ef58e',
+                        borderWidth: '9'
+                    },
+                    minutes: {
+                        borderColor: '#ff8d72',
+                        borderWidth: '9'
+                    },
+                    hours: {
+                        borderColor: '#69ccff',
+                        borderWidth: '9'
+                    },
+                    days: {
+                        borderColor: '#ffd35c',
+                        borderWidth: '9'
+                    }
+                });
+            </text>
+        }
+        else
+        {
+            <text>$('.countdown').remove();</text>
+        }
+    });
+</script>

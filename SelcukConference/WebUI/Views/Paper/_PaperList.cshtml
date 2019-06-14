@@ -1,0 +1,99 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@using DataAccess.Entities
+@model List<Bildiri>
+@{
+    var sira = 1;
+    var oturum = (Uye)TempData["oturum"];
+}
+
+@foreach (var item in Model)
+{
+    var hakemBildiri = item.HakemBildiriAtama.SingleOrDefault(x => x.HakemId == oturum.Id);
+    <tr style="cursor: pointer" myvalue="@item.Id">
+        <td class="hidden-xs text-center">@(sira++)</td>
+        @if (item.YazarId != oturum.Id)
+        {
+            <td class="isimIcerik hidden-xs">
+                <span class="font-medium">@item.Yazar.Nick</span>
+            </td>
+        }
+
+        @if (item.Konu.Length > 50)
+        {
+            <td class="konuIcerik">
+                @item.Konu.Substring(0, 50)
+                <div class="mytooltip" href="javascript:void(0)">
+                    &nbsp; <b class="text-muted">@Localizer["davami"]</b>
+                    <span class="tooltip-content5" style="width: 500px; margin-left: -250px; white-space: normal; font-size: 17px">
+                        <span class="tooltip-text3">
+                            <span class="tooltip-inner2">@item.Konu</span>
+                        </span>
+                    </span>
+                </div>
+            </td>
+        }
+        else
+        {
+            <td class="konuIcerik">@item.Konu</td>
+        }
+        <td>
+            @if (hakemBildiri != null)
+            {
+                if (hakemBildiri.Sonuc == 2)
+                {
+                    <span class="label label-info">@Localizer["bekliyor"]</span>
+                }
+                else if (hakemBildiri.Sonuc == 3)
+                {
+                    <span class="label label-success">@Localizer["onaylandi"]</span>
+                }
+                else if (hakemBildiri.Sonuc == 4)
+                {
+                    <span class="label label-warning">@Localizer["revizyon"]</span>
+                }
+                else
+                {
+                    <span class="label label-danger">@Localizer["ret"]</span>
+                }
+            }
+            else
+            {
+                if (item.EditorId == oturum.Id && item.HakemBildiriAtama.Count <= 0)
+                {
+                    <span class="label" style="background-color: dimgray">@Localizer["hakemAtanmadi"]</span>
+                }
+                else if (item.Sonuc == 2)
+                {
+                    <span class="label label-info">@Localizer["bekliyor"]</span>
+                }
+                else if (item.Sonuc == 3)
+                {
+                    <span class="label label-success">@Localizer["onaylandi"]</span>
+                }
+                else if (item.Sonuc == 4)
+                {
+                    <span class="label label-warning">@Localizer["revizyon"]</span>
+                }
+                else
+                {
+                    <span class="label label-danger">@Localizer["ret"]</span>
+                }
+            }
+        </td>
+        <td class="hidden-xs">
+            <i class="fa fa-paperclip"></i> <span class="font-12">(@item.Ek.Count)</span>
+        </td>
+        <td class="text-right">@item.BildiriTarih.ToLongDateString()</td>
+    </tr>
+}
+
+
+<script>
+    $(document).ready(function () {
+        $('.content-wrap tbody tr').on('click', function () {
+            var bildiriId = $(this).attr('myvalue');
+            location.href = "/Paper/PaperDetail?bId=" + bildiriId;
+        });
+
+    });
+</script>

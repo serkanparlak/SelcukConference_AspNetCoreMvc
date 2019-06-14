@@ -1,0 +1,131 @@
+﻿@inject WebUI.CustomLocalizer Localizer
+@model WebUI.Areas.Admin.Models.ContentViewModel
+
+@{
+    Layout = "AdminLayout";
+    var dilTr = Localizer.CurrentLanguage == "tr";
+}
+<link href="~/plugins/summernote/summernote.css" rel="stylesheet" />
+<style>
+    /*.mainpanel {
+        background: url(/images/heading-bg/slide3.jpg);
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-color: rgba(44,62,80, 0.6 );
+        background-size: cover;
+        min-height: 200px;
+    }*/
+</style>
+
+<div class="row bg-title" style="padding-top: 15px">
+    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+        <h4>
+            @(dilTr ? Model.ActiveMenu.MenuAdi : Model.ActiveMenu.MenuAdiEng)
+        </h4>
+    </div>
+    <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12">
+        <ol class="breadcrumb">
+            <li><a href="/Admin">@Localizer["anasayfa"]</a></li>
+            @if (Model.UstMenu != null)
+            {
+                <li>
+                    @(dilTr ? Model.UstMenu.MenuAdi : Model.UstMenu.MenuAdiEng)
+                </li>
+            }
+            <li class="active">
+                @(dilTr ? Model.ActiveMenu.MenuAdi : Model.ActiveMenu.MenuAdiEng)
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="row" style="margin-bottom: 25px">
+    <div class="col-md-12 col-xs-12 col-sm-12 col-lg-12">
+        @*<div class="mainpanel"></div>*@
+        <img style="width: 100%" src="@Model.GenelData.BannerYol" />
+    </div>
+</div>
+
+<div class="row">
+    <form id="menu-icerik-edit-form">
+        <input type="text" name="Id" value="@Model.ActiveMenu.Id" hidden="" />
+        <input type="text" name="ListeSira" value="-3" hidden="" />
+        @if (Model.ActiveMenu.MenuAdi.ToLower().Contains("komite") || Model.ActiveMenu.MenuAdiEng.ToLower().Contains("commit"))
+        {
+            <div class="col-md-6">
+                <div class="white-box" style="max-height: 300px; overflow-y: auto">
+                    <h5 class="text-primary" style="font-family: inherit; color: rgb(51, 122, 183);"><span style="font-weight: 700;">@Localizer["bilimselKomite"]</span></h5>
+                    @foreach (var item in Model.BilKomites)
+                    {
+                        <h6 style="font-family: inherit; color: inherit;">@item.Unvan @item.Adi @item.Soyadi, @item.Kurum - @item.Sehir.Ulke.UlkeAdi</h6>
+                    }
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="white-box" style="max-height: 300px; overflow-y: auto">
+                    <h5 class="text-primary" style="font-family: inherit; color: rgb(51, 122, 183);"><span style="font-weight: 700;">@Localizer["organizasyonKomite"]</span></h5>
+                    @foreach (var item in Model.OrgKomites)
+                    {
+                        <h6 style="font-family: inherit; color: inherit;">@item.Unvan @item.Adi @item.Soyadi, @item.Kurum - @item.Sehir.Ulke.UlkeAdi</h6>
+                    }
+                </div>
+            </div>
+        }
+        <div class="col-md-12">
+            <div class="white-box">
+                <h3 class="box-title">@Localizer["sayfaIcerik{0}", dilTr ? "Türkçe" : "Turkish"]</h3>
+                <textarea id="summernote" name="SayfaIcerik">
+                        @Html.Raw(Model.ActiveMenu.SayfaIcerik)
+                </textarea>
+            </div>
+            <div class="white-box">
+                <h3 class="box-title">@Localizer["sayfaIcerik{0}", dilTr ? "İngilizce" : "English"]</h3>
+                <textarea id="summernoteEng" name="SayfaIcerikEng">
+                        @Html.Raw(Model.ActiveMenu.SayfaIcerikEng)
+                </textarea>
+            </div>
+        </div>
+        <div class="col-md-12 col-lg-12">
+            <button type="button" class="btn btn-block btn-primary btn-lg text-uppercase" onclick="Save()">@Localizer["kaydet"]</button>
+        </div>
+    </form>
+</div>
+
+<script src="~/plugins/summernote/summernote.min.js"></script>
+<script>
+    var birSorunOlustu = @Json.Serialize(Localizer["birSorunOlustu"].Value);
+    var islemBasarili = @Json.Serialize(Localizer["islemBasarili"].Value);
+
+    $(document).ready(function () {
+        $('#summernote, #summernoteEng').summernote({
+            height: 150, // set editor height
+            minHeight: null, // set minimum height of editor
+            maxHeight: 500, // set maximum height of editor
+            focus: false // set focus to editable area after initializing summernote
+        });
+    });
+
+    function Save() {
+        var form = $('#menu-icerik-edit-form').serializeArray();
+        $.ajax({
+            url: '/Admin/Home/IcerikKayit',
+            method: 'POST',
+            data: form,
+            success: function (result) {
+                if (result) {
+                    $.toast({
+                        heading: islemBasarili,
+                        text: '',
+                        icon: 'success'
+                    });
+                } else {
+                    $.toast({
+                        heading: birSorunOlustu,
+                        text: '',
+                        icon: 'error'
+                    });
+                }
+            }
+        });
+    }
+</script>

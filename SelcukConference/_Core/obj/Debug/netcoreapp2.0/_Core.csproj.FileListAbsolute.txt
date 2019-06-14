@@ -1,0 +1,9 @@
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\bin\Debug\netcoreapp2.0\_Core.deps.json
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\bin\Debug\netcoreapp2.0\_Core.dll
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\obj\Debug\netcoreapp2.0\_Core.csprojAssemblyReference.cache
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\obj\Debug\netcoreapp2.0\_Core.csproj.CoreCompileInputs.cache
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\obj\Debug\netcoreapp2.0\_Core.AssemblyInfoInputs.cache
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\obj\Debug\netcoreapp2.0\_Core.AssemblyInfo.cs
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\bin\Debug\netcoreapp2.0\_Core.pdb
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\obj\Debug\netcoreapp2.0\_Core.dll
+C:\Users\YUSUF\source\repos\SelcukConference\_Core\obj\Debug\netcoreapp2.0\_Core.pdb
